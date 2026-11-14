@@ -153,8 +153,8 @@
       <p class="subtitle">Vintage Single-Card Play & Live 1–90 Voice Caller</p>
     </header>
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('card-tab')">Bingo Card Studio</button>
-      <button class="tab-btn" onclick="switchTab('caller-tab')">1–90 Caller & Master Board</button>
+      <button class="tab-btn active" onclick="switchTab('card-tab', event)">Bingo Card Studio</button>
+      <button class="tab-btn" onclick="switchTab('caller-tab', event)">1–90 Caller & Master Board</button>
     </div>
     <div id="card-tab" class="tab-content active">
       <div class="card-workspace">
@@ -218,11 +218,11 @@
     let generatedCardSignatures = new Set(), currentCardData = null, cardSequenceNum = 1;
     let calledBalls = new Set(), availableBalls = [], autoDrawInterval = null, isAutoRunning = false, availableVoices = [];
 
-    function switchTab(tabId) {
+    function switchTab(tabId, evt) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
-      event.currentTarget.classList.add('active');
+      if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
     }
 
     function generateCardData() {
@@ -302,6 +302,7 @@
 
     function renderCard(card) {
       const container = document.getElementById('card-render-container');
+      if (!container) return;
       let html = `<div class="vintage-bingo-card"><div class="card-header-row"><div class="card-title-logo">BINGO</div><div class="card-number-badge">NO.${cardSequenceNum}</div></div><div class="vintage-grid">`;
       for (let r = 0; r < 3; r++) {
         for (let c = 0; c < 9; c++) {
@@ -316,7 +317,8 @@
       }
       html += `</div></div>`;
       container.innerHTML = html;
-      document.getElementById('unique-counter-text').innerText = `Unique Cards Generated: ${generatedCardSignatures.size}`;
+      const counter = document.getElementById('unique-counter-text');
+      if (counter) counter.innerText = `Unique Cards Generated: ${generatedCardSignatures.size}`;
     }
 
     function toggleDauber(r, c) {
@@ -349,14 +351,17 @@
 
     function renderMasterBoard() {
       const grid = document.getElementById('master-board-grid');
+      if (!grid) return;
       let html = '';
       for (let i = 1; i <= 90; i++) {
         let isCalled = calledBalls.has(i);
         html += `<div class="master-cell ${isCalled ? 'called' : ''}" id="master-${i}">${i}</div>`;
       }
       grid.innerHTML = html;
-      document.getElementById('called-count').innerText = `Called: ${calledBalls.size} / 90`;
-      document.getElementById('balls-remaining-text').innerText = `${90 - calledBalls.size} numbers remaining`;
+      const countEl = document.getElementById('called-count');
+      if (countEl) countEl.innerText = `Called: ${calledBalls.size} / 90`;
+      const remEl = document.getElementById('balls-remaining-text');
+      if (remEl) remEl.innerText = `${90 - calledBalls.size} numbers remaining`;
     }
 
     function drawNextBall() {
@@ -375,8 +380,10 @@
     }
 
     function updateCallerDisplay(num, phrase) {
-      document.getElementById('current-ball-num').innerText = num !== null ? num : '--';
-      document.getElementById('current-ball-phrase').innerText = phrase;
+      const numEl = document.getElementById('current-ball-num');
+      const phraseEl = document.getElementById('current-ball-phrase');
+      if (numEl) numEl.innerText = num !== null ? num : '--';
+      if (phraseEl) phraseEl.innerText = phrase;
     }
 
     function resetCaller() {
@@ -393,7 +400,8 @@
     function startAutoDraw() {
       if (availableBalls.length === 0) return;
       isAutoRunning = true;
-      document.getElementById('auto-draw-btn').innerText = "Auto-Draw: On";
+      const btn = document.getElementById('auto-draw-btn');
+      if (btn) btn.innerText = "Auto-Draw: On";
       drawNextBall();
       autoDrawInterval = setInterval(() => {
         if (availableBalls.length > 0) drawNextBall();
@@ -402,13 +410,4 @@
     }
 
     function stopAutoDraw() {
-      isAutoRunning = false;
-      clearInterval(autoDrawInterval);
-      const btn = document.getElementById('auto-draw-btn');
-      if (btn) btn.innerText = "Auto-Draw: Off";
-    }
-
-    function loadVoices() {
-      if (!('speechSynthesis' in window)) return;
-      availableVoices = window.speechSynthesis.getVoices();
-      const select = documen
+     
