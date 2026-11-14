@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1-90 Bingo Caller & Single Unique Card Studio</title>
+  <style>
+    /* ==========================================================
+       1. BASE RESET & DESIGN TOKENS (VINTAGE BLUE & CREAM)
+       ========================================================== */
+    :root {
+      --bg-page: #eef2f6;
+      --bg-surface: #ffffff;
+      --bg-muted: #f1f5f9;
+      --border-subtle: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+
+      /* Vintage Bingo Palette */
+      --card-cream: #f5f2e6;
+      --card-cream-dark: #ebe5d0;
+      --bingo-blue: #0094d4;
+      --bingo-blue-dark: #0073a8;
+      --bingo-blue-light: #e0f2fe;
+      --dauber-red: #dc2626;
+      --dauber-glow: rgba(220, 38, 38, 0.35);
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+      --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1);
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.5;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================
+       2. HEADER & TABS
+       ========================================================== */
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    p.subtitle {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 10px 20px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-btn:hover {
+      background: var(--bg-muted);
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      background: var(--bingo-blue);
+      border-color: var(--bingo-blue);
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ==========================================================
+       3. CARD STUDIO WORKSPACE
+       ========================================================== */
+    .card-workspace {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn {
+      background: var(--bingo-blue);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn:hover {
+      background: var(--bingo-blue-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-muted);
+    }
+
+    .unique-counter {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ==========================================================
+       4. VINTAGE BINGO CARD (3x9 Grid)
+       ========================================================== */
+    .vintage-card-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      padding: 10px 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .vintage-bingo-card {
+      background-color: var(--card-cream);
+      border: 3px solid var(--bingo-blue);
+      border-radius: 8px;
+      padding: 12px;
+      width: 100%;
+      max-width: 620px;
+      box-shadow: 0 6px 16px rgba(0, 148, 212, 0.15);
+      position: relative;
+    }
+
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+
+    .card-title-logo {
+      font-family: 'Arial Black', Gadget, sans-serif;
+      font-weight: 900;
+      font-size: 1.35rem;
+      color: var(--bingo-blue);
+      letter-spacing: 0.08em;
+    }
+
+    .card-number-badge {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--bingo-blue);
+      border: 2px solid var(--bingo-blue);
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: white;
+      letter-spacing: 0.05em;
+    }
+
+    .vintage-grid {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 3px;
+      background-color: var(--bingo-blue);
+      border: 3px solid var(--bingo-blue);
+      border-radius: 4px;
+    }
+
+    .bingo-cell {
+      aspect-ratio: 1;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s ease;
+    }
+
+    .bingo-cell.blank-cell {
+      background-color: var(--bingo-blue);
+    }
+
+    .bingo-cell.number-cell:hover {
+      background-color: var(--bingo-blue-light);
+    }
+
+    .bingo-cell-num {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: 700;
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      color: var(--bingo-blue-dark);
+      transform: scaleY(1.15) scaleX(0.9);
+      letter-spacing: -0.02em;
+    }
+
+    /* Red Dauber Marker State */
+    .bingo-cell.number-cell.dabbed::after {
+      content: '';
+      position: absolute;
+      inset: 12%;
+      background: radial-gradient(circle, var(--dauber-red) 60%, rgba(220, 38, 38, 0.8) 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--dauber-glow);
+      animation: dabPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      z-index: 2;
+    }
+
+    @keyframes dabPop {
+      0% { transform: scale(0.3); opacity: 0; }
+      100% { transform: scale(1); opacity: 0.92; }
+    }
+
+    /* Wireframe Globe SVG inside blank blue cells */
+    .globe-icon {
+      width: 65%;
+      height: 65%;
+      opacity: 0.45;
+      stroke: white;
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    /* ==========================================================
+       5. CALLER & MASTER BOARD
+       ========================================================== */
+    .caller-workspace {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .current-ball-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: var(--bg-muted);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .ball-sphere {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #38bdf8, var(--bingo-blue) 70%, var(--bingo-blue-dark));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      box-shadow: 0 8px 16px rgba(0, 148, 212, 0.3), inset 0 3px 6px rgba(255, 255, 255, 0.4);
+      margin-bottom: 12px;
+      transition: transform 0.3s ease;
+    }
+
+    .ball-sphere.pop {
+      transform: scale(1.1);
+    }
+
+    .call-phrase {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--bingo-blue-dark);
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .call-subtext {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .caller-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .voice-settings {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 20px;
+      background: var(--bg-muted);
+      padding: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .voice-settings label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .voice-settings select {
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: white;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    /* Master 1-90 Board Grid */
+    .master-board-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .master-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .master-grid {
+        grid-template-columns: repeat(9, 1fr);
+      }
+    }
+
+    .master-cell {
+      aspect-ratio: 1;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .master-cell.called {
+      background: var(--bingo-blue);
+      color: white;
+      border-color: var(--bingo-blue-dark);
+      box-shadow: 0 2px 4px rgba(0, 148, 212, 0.3);
+      transform: scale(1.05);
+    }
+
+    /* Print Media Styling for Single Card */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      header, .tabs, .card-workspace .card-controls, .unique-counter, .caller-workspace {
+        display: none !important;
+      }
+      .card-workspace {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+      .vintage-bingo-card {
+        box-shadow: none;
+        border: 3px solid #000;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <h1>1–90 Bingo Studio</h1>
+      <p class="subtitle">Vintage Single-Card Play & Live 1–90 Voice Caller</p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('card-tab')">Bingo Card Studio</button>
+      <button class="tab-btn" onclick="switchTab('caller-tab')">1–90 Caller & Master Board</button>
+    </div>
+
+    <!-- TAB 1: CARD STUDIO -->
+    <div id="card-tab" class="tab-content active">
+      <div class="card-workspace">
+        <div class="card-controls">
+          <button class="btn" onclick="generateNewUniqueCard()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+            Generate New Unique Card
+          </button>
+          <button class="btn btn-secondary" onclick="clearDaubers()">Clear Daubers</button>
+          <button class="btn btn-secondary" onclick="window.print()">Print Card</button>
+        </div>
+        <div class="unique-counter" id="unique-counter-text">Unique Cards Generated: 1</div>
+
+        <!-- Rendered Vintage Card -->
+        <div class="vintage-card-wrapper" id="card-render-container">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CALLER & MASTER BOARD -->
+    <div id="caller-tab" class="tab-content">
+      <div class="caller-workspace">
+        <!-- Current Ball Callout -->
+        <div class="current-ball-display">
+          <div class="ball-sphere" id="current-ball-num">--</div>
+          <div class="call-phrase" id="current-ball-phrase">Ready to Call!</div>
+          <div class="call-subtext" id="balls-remaining-text">90 numbers remaining</div>
+        </div>
+
+        <!-- Controls & Voice Settings -->
+        <div class="caller-controls-grid">
+          <button class="btn" onclick="drawNextBall()">Draw Next Ball</button>
+          <button class="btn btn-secondary" id="auto-draw-btn" onclick="toggleAutoDraw()">Auto-Draw: Off</button>
+          <button class="btn btn-secondary" onclick="resetCaller()">Reset Game</button>
+        </div>
+
+        <div class="voice-settings">
+          <label for="voice-select">Caller Voice & Speech Output:</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="voice-select" style="flex: 1;"></select>
+            <button class="btn btn-secondary" style="padding: 6px 12px;" onclick="testVoice()">Test Voice</button>
+          </div>
+        </div>
+
+        <!-- Master 1-90 Board -->
+        <div class="master-board-title">
+          <span>Master 1–90 Board</span>
+          <span id="called-count" style="font-size: 0.85rem; color: var(--text-secondary);">Called: 0 / 90</span>
+        </div>
+        <div class="master-grid" id="master-board-grid">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================
+       BINGO 90 GENERATOR & CALLER ENGINE
+       ========================================================== */
+
+    // Trad 90-Ball Nicknames & Callout phrases
+    const bingoNicknames = {
+      1: "Kelly's Eye, number 1", 2: "One little duck, number 2", 3: "Cup of tea, number 3", 4: "Knock at the door, number 4", 5: "Man alive, number 5",
+      6: "Half a dozen, number 6", 7: "Lucky seven, number 7", 8: "Garden gate, number 8", 9: "Doctor's orders, number 9", 10: "Prime minister's den, number 10",
+      11: "Legs eleven, number 11", 12: "One dozen, number 12", 13: "Unlucky for some, number 13", 14: "Valentine's day, number 14", 15: "Young and keen, number 15",
+      16: "Sweet sixteen, number 16", 17: "Dancing queen, number 17", 18: "Coming of age, number 18", 19: "Goodbye teens, number 19", 20: "One score, number 20",
+      21: "Key of the door, number 21", 22: "Two little ducks, number 22", 23: "Thee and me, number 23", 24: "Two dozen, number 24", 25: "Duck and dive, number 25",
+      26: "Pick and mix, number 26", 27: "Gateway to heaven, number 27", 28: "In the state, number 28", 29: "Rise and shine, number 29", 30: "Dirty Gertie, number 30",
+      31: "Get up and run, number 31", 32: "Buckle my shoe, number 32", 33: "Dirty knee, number 33", 34: "Ask for more, number 34", 35: "Jump and jive, number 35",
+      36: "Three dozen, number 36", 37: "More than eleven, number 37", 38: "Christmas cake, number 38", 39: "Steps, number 39", 40: "Life begins at 40",
+      41: "Time for fun, number 41", 42: "Winnie the Pooh, number 42", 43: "Down on your knees, number 43", 44: "Droopy drawers, number 44", 45: "Halfway there, number 45",
+      46: "Up to tricks, number 46", 47: "Four and seven, number 47", 48: "Four dozen, number 48", 49: "PC, number 49", 50: "Half a century, number 50",
+      51: "Tweak of the thumb, number 51", 52: "Chicken vindaloo, number 52", 53: "Stuck in the tree, number 53", 54: "Clean the floor, number 54", 55: "Snakes alive, number 55",
+      56: "Washer machine, number 56", 57: "Heinz varieties, number 57", 58: "Make them wait, number 58", 59: "Brighton line, number 59", 60: "Five dozen, number 60",
+      61: "Baker's bun, number 61", 62: "Tickety-boo, number 62", 63: "Tickle me, number 63", 64: "Red raw, number 64", 65: "Old age pension, number 65",
+      66: "Clickety-click, number 66", 67: "Stairway to heaven, number 67", 68: "Saving grace, number 68", 69: "Either way up, number 69", 70: "Three score and ten, number 70",
+      71: "Bang on the drum, number 71", 72: "Six dozen, number 72", 73: "Queen bee, number 73", 74: "Hit the floor, number 74", 75: "Strive and thrive, number 75",
+      76: "Trombones, number 76", 77: "Sunset strip, number 77", 78: "Heaven's gate, number 78", 79: "One more time, number 79", 80: "Eightieth year, number 80",
+      81: "Fat lady with a-one, number 81", 82: "Straight on through, number 82", 83: "Time for tea, number 83", 84: "Seven dozen, number 84", 85: "Staying alive, number 85",
+      86: "Between the sticks, number 86", 87: "Torquay in Devon, number 87", 88: "Two fat ladies, number 88", 89: "Nearly there, number 89", 90: "Top of the shop, number 90"
+    };
+
+    let generatedCardSignatures = new Set();
+    let currentCardData = null;
+    let cardSequenceNum = 1;
+
+    // Caller State
+    let calledBalls = new Set();
+    let availableBalls = [];
+    let autoDrawInterval = null;
+    let isAutoRunning = false;
+    let availableVoices = [];
+
+    // --- TAB SWITCHING ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    // --- 90-BALL BINGO CARD GENERATOR LOGIC ---
+    function generateCardData() {
+      let card;
+      let signature;
+      let attempts = 0;
+
+      do {
+        card = createEmpty3x9Card();
+        populate90BallCard(card);
+        signature = getCardSignature(card);
+        attempts++;
+        if (attempts > 1000) break; // safeguard
+      } while (generatedCardSignatures.has(signature));
+
+      generatedCardSignatures.add(signature);
+      currentCardData = card;
+      return card;
+    }
+
+    function createEmpty3x9Card() {
+      // 3 rows, 9 columns
+      let grid = [];
+      for (let r = 0; r < 3; r++) {
+        let row = [];
+        for (let c = 0; c < 9; c++) {
+          row.push({ val: null, dabbed: false });
+        }
+        grid.push(row);
+      }
+      return grid;
+    }
+
+    function populate90BallCard(card) {
+      // Column ranges for 90-ball:
+      // Col 0: 1-9, Col 1: 10-19, Col 2: 20-29, ..., Col 8: 80-90
+      let colPools = [];
+      for (let c = 0; c < 9; c++) {
+        let min = c * 10 + (c === 0 ? 1 : 0);
+        let max = c === 8 ? 90 : c * 10 + 9;
+        let pool = [];
+        for (let n = min; n <= max; n++) pool.push(n);
+        // Shuffle pool
+        pool.sort(() => Math.random() - 0.5);
+        colPools.push(pool);
+      }
+
+      // Each row must have exactly 5 numbers and 4 blanks
+      // Total numbers = 15 (5 per row)
+      let rowCounts = [5, 5, 5];
+      let colCounts = [0,0,0,0,0,0,0,0,0];
+
+      // Select 5 columns for each row ensuring each column has at least 1 number, max 2
+      let rowMasks = [];
+      for (let r = 0; r < 3; r++) {
+        let cols = [];
+        while (cols.length < 5) {
+          let randCol = Math.floor(Math.random() * 9);
