@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1–90 Bingo Caller &amp; Single Unique Card Studio</title>
+  <style>
+    /* =====================================================================
+       1. BASE RESET & DESIGN TOKENS (100% SELF-CONTAINED)
+       ===================================================================== */
+    :root {
+      --bg-page: #eef2f6;
+      --bg-surface: #ffffff;
+      --bg-muted: #f1f5f9;
+      --border-subtle: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+
+      /* Vintage Blue & Cream Bingo Card Palette */
+      --bingo-blue: #0094d4;
+      --bingo-blue-dark: #0073a8;
+      --bingo-blue-light: #e0f2fe;
+      --card-cream: #f5f2e6;
+      --dauber-red: rgba(220, 38, 38, 0.78);
+      --amber-latest: #f59e0b;
+      --emerald-win: #10b981;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Prevent any SVG from ever blowing up to full screen */
+    svg {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .icon-sm {
+      width: 16px;
+      height: 16px;
+    }
+
+    .icon-md {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* =====================================================================
+       2. LAYOUT & HEADER
+       ===================================================================== */
+    .app-header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+
+    .header-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background-color: var(--bingo-blue);
+      color: var(--card-cream);
+      font-weight: 900;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 148, 212, 0.3);
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-subtitle {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .unique-counter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background-color: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--emerald-win);
+    }
+
+    .main-workspace {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    @media (min-width: 640px) {
+      .panel {
+        padding: 22px;
+      }
+    }
+
+    /* =====================================================================
+       3. CARD CONTROLS & BUTTONS
+       ===================================================================== */
+    .panel-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    @media (min-width: 768px) {
+      .panel-toolbar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .panel-heading-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .panel-heading {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .card-badge {
+      background-color: var(--bingo-blue-light);
+      color: var(--bingo-blue-dark);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .panel-desc {
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-muted);
+      border-color: var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: #e2e8f0;
+    }
+
+    .btn-primary {
+      background-color: var(--bingo-blue);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 148, 212, 0.28);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--bingo-blue-dark);
+    }
+
+    .btn-draw-hero {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 16px;
+      font-weight: 800;
+      border-radius: 12px;
+      margin-top: 14px;
+    }
+
+    /* =====================================================================
+       4. VINTAGE BLUE & CREAM BINGO CARD (EXACT PHOTO REPLICA)
+       ===================================================================== */
+    .single-card-wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .vintage-bingo-card {
+      background-color: var(--card-cream);
+      border-radius: 12px;
+      padding: 10px 12px 14px 12px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+      border: 1px solid #d6d1c0;
+      width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      .vintage-bingo-card {
+        padding: 14px 18px 18px 18px;
+      }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0 2px 6px 2px;
+      color: var(--bingo-blue);
+    }
+
+    .card-title-bingo {
+      font-family: "Arial Black", Impact, "Segoe UI", sans-serif;
+      font-weight: 900;
+      font-size: clamp(20px, 4.5vw, 30px);
+      letter-spacing: 0.08em;
+      line-height: 1;
+      transform: scaleX(1.12);
+      transform-origin: left center;
+    }
+
+    .card-serial {
+      font-family: "Arial Black", "Segoe UI", sans-serif;
+      font-weight: 900;
+      font-size: clamp(13px, 2.8vw, 18px);
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    /* Outer Cerulean Blue Grid Frame */
+    .card-grid-frame {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(9, minmax(0, 1fr));
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+      background-color: var(--bingo-blue);
+      border: 3px solid var(--bingo-blue);
+      border-radius: 4px;
+      gap: 2.5px;
+      aspect-ratio: 9 / 3.45;
+      width: 100%;
+    }
+
+    /* White corner intersection dots matching the vintage card */
+    .grid-dot {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background-color: var(--card-cream);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .bingo-cell {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      overflow: hidden;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    /* Cream Number Cell */
+    .bingo-cell.number-cell {
+      background-color: var(--card-cream);
+      color: var(--bingo-blue);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s ease;
+    }
+
+    .bingo-cell.number-cell:hover {
+      background-color: #ece6d2;
+    }
+
+    /* Subtle ring when number has been drawn by caller */
+    .bingo-cell.number-cell.called-match {
+      box-shadow: inset 0 0 0 2px #f59e0b;
+    }
+
+    .bingo-cell-num {
+      font-family: Georgia, "Times New Roman", Times, serif;
+      font-weight: 700;
+      font-size: clamp(17px, 4.3vw, 34px);
+      line-height: 1;
+      transform: scaleY(1.25) scaleX(0.88);
+      letter-spacing: -0.03em;
+      z-index: 1;
+    }
+
+    /* Translucent Red Digital Dauber Mark */
+    .bingo-cell.number-cell.dabbed::after {
+      content: "";
+      position: absolute;
+      width: 78%;
+      height: 78%;
+      max-width: 48px;
+      max-height: 48px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, rgba(248, 113, 113, 0.85), var(--dauber-red));
+      box-shadow: 0 2px 4px rgba(153, 27, 27, 0.35);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Solid Blue Blank Cell with Wireframe Globe Emblem */
+    .bingo-cell.blank-cell {
+      background-color: var(--bingo-blue);
+    }
+
+    .globe-svg {
+      width: 72%;
+      height: 72%;
+      max-width: 34px;
+      max-height: 28px;
+      opacity: 0.92;
+      pointer-events: none;
+    }
+
+    /* Win Celebration Banner */
+    .win-banner {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      animation: popIn 0.25s ease-out;
+    }
+
+    .win-banner.visible {
+      display: block;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* =====================================================================
+       5. CALLER CONSOLE & 1-90 MASTER BOARD GRID
+       ===================================================================== */
+    .caller-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    @media (min-width: 900px) {
+      .caller-layout {
+        grid-template-columns: 5fr 7fr;
+      }
+    }
+
+    .caller-console {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .caller-top-meta {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .bingo-ball-display {
+      width: 136px;
+      height: 136px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #29b6f6, var(--bingo-blue) 60%, var(--bingo-blue-dark));
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 4px solid var(--card-cream);
+      box-shadow: 0 10px 24px rgba(0, 148, 212, 0.32), 0 0 0 4px rgba(0, 148, 212, 0.16);
+      margin: 4px 0;
+    }
+
+    .ball-sub {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      opacity: 0.85;
+    }
+
+    .ball-number {
+      font-size: 54px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .callout-phrase {
+      margin: 12px 0 0 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      min-height: 22px;
+    }
+
+    .controls-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .voice-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .voice-select {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-muted);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .btn-voice-active {
+      background-color: var(--bingo-blue-light);
+      border-color: #7dd3fc;
+      color: var(--bingo-blue-dark);
+    }
+
+    .btn-reset-link {
+      background: none;
+      border: none;
+      color: #e11d48;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+      margin-top: 14px;
+      padding: 4px 8px;
+    }
+
+    .history-box {
+      width: 100%;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #e2e8f0;
+      text-align: left;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-secondary);
+    }
+
+    .history-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 32px;
+      align-items: center;
+    }
+
+    .history-ball {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #ffffff;
+      background-color: var(--bingo-blue);
+    }
+
+    .history-ball.latest {
+      background-color: var(--amber-latest);
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35);
+    }
+
+    /* Master 1-90 Board */
+    .board-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .master-board-grid {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    @media (min-width: 640px) {
+      .master-board-grid {
+        gap: 7px;
+      }
+    }
+
+    .master-ball {
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-muted);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+
+    @media (min-width: 640px) {
+      .master-ball {
+        font-size: 13px;
+      }
+    }
+
+    .master-ball.called {
+      background-color: var(--bingo-blue);
+      border-color: var(--bingo-blue-dark);
+      color: #ffffff;
+    }
+
+    .master-ball.latest {
+      background-color: var(--amber-latest);
+      border-color: #d97706;
+      color: #ffffff;
+      transform: scale(1.06);
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      z-index: 60;
+      background-color: #0f172a;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+      transform: translateY(90px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+
+    .toast-box.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* =====================================================================
+       6. PRINT STYLES (CLEAN SINGLE CARD PRINT)
+       ===================================================================== */
+    @media print {
+      body {
+        background: #ffffff !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .main-workspace {
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .panel {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      .single-card-wrapper {
+        max-width: 145mm !important;
+        margin: 12mm auto !important;
+      }
+      .vintage-bingo-card {
+        box-shadow: none !important;
+        border: 1px solid #94a3b8 !important;
+      }
+      .bingo-cell.number-cell.dabbed::after {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header no-print">
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-badge">90</div>
+        <div>
+          <h1 class="brand-title">1–90 Bingo Caller &amp; Card Studio</h1>
+          <p class="brand-subtitle">Vintage Blue &amp; Cream Single-Card Play + Voice Caller</p>
+        </div>
+      </div>
+
+      <div class="unique-counter-pill">
+        <span class="status-dot"></span>
+        <span>Unique Cards Generated: <strong id="unique-cards-counter" style="color: var(--bingo-blue);">1</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification (Never uses alert()) -->
+  <div id="toast-box" class="toast-box no-print" role="status" aria-live="polite">
+    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--bingo-blue);"></span>
+    <span id="toast-message">Ready</span>
+  </div>
+
+  <!-- Main Workspace -->
+  <main class="main-workspace">
+
+    <!-- TOP PANEL: ACTIVE VINTAGE BINGO CARD -->
+    <section class="panel">
+      <div class="panel-toolbar no-print">
+        <div>
+          <div class="panel-heading-row">
+            <h2 class="panel-heading">Your Active 90-Ball Bingo Card</h2>
+            <span id="active-card-badge" class="card-badge">Card #1</span>
+          </div>
+          <p class="panel-desc">
+            Click any number square to dab/mark it. Every new card is guaranteed unique and never repeated.
+          </p>
+        </div>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" onclick="clearAllDabs()">
+            Clear Marks
+          </button>
+
+          <button type="button" class="btn btn-secondary" onclick="window.print()">
+            <svg class="icon-sm" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Print Card
+          </button>
+
+          <button type="button" class="btn btn-primary" onclick="generateNewUniqueCard()">
+            <svg class="icon-sm" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Generate New Card
+          </button>
+        </div>
+      </div>
+
+      <!-- Single Vintage Card Mount -->
+      <div id="single-card-container" class="single-card-wrapper"></div>
+
+      <!-- Automatic Line / Full House Win Celebration Banner -->
+      <div id="win-banner" class="win-banner no-print"></div>
+    </section>
+
+    <!-- BOTTOM SECTION: 1-90 VOICE CALLER & MASTER TRACKING BOARD -->
+    <div class="caller-layout no-print">
+
+      <!-- Left: Voice Caller Console -->
+      <section class="panel caller-console">
+        <div class="caller-top-meta">
+          <span>Current Ball</span>
+          <span id="remaining-count">90 Remaining</span>
+        </div>
+
+        <div class="bingo-ball-display">
+          <span class="ball-sub">BINGO</span>
+          <span id="current-number-display" class="ball-number">--</span>
+        </div>
+
+        <p id="number-callout-phrase" class="callout-phrase">
+          Ready! Tap "Draw Next Number"
+        </p>
+
+        <button type="button" class="btn btn-primary btn-draw-hero" onclick="drawNextNumber()">
+          <svg class="icon-md" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Draw Next Number
+        </button>
+
+        <div class="controls-grid-2">
+          <button type="button" id="btn-auto-draw" class="btn btn-secondary" onclick="toggleAutoDraw()">
+            <span id="auto-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8;"></span>
+            <span id="auto-label">Auto-Draw: OFF</span>
+          </button>
+
+          <button type="button" id="btn-voice-toggle" class="btn btn-secondary btn-voice-active" onclick="toggleVoice()">
+            <svg class="icon-sm" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+            <span id="voice-label">Voice: ON</span>
+          </button>
+        </div>
+
+        <div class="voice-row">
+          <select id="voice-select" class="voice-select" aria-label="Select Caller Voice">
+            <option value="">System / Built-In Voice</option>
+          </select>
+          <button type="button" class="btn btn-secondary" onclick="testCallerVoice()">
+            Test Voice
+          </button>
+        </div>
+
+        <button type="button" class="btn-reset-link" onclick="resetCallerGame()">
+          Reset Caller &amp; Clear Board
+        </button>
+
+        <div class="history-box">
+          <div class="history-header">
+            <span>Last 10 Called Numbers</span>
+            <span id="called-total-badge">0 / 90</span>
+          </div>
+          <div id="recent-history-list" class="history-pills">
+            <span style="font-size: 12px; color: var(--text-muted); font-style: italic;">No numbers called yet.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: 1-90 Master Tracking Board -->
+      <section class="panel">
+        <div class="board-header">
+          <div>
+            <h2 class="panel-heading">1–90 Master Tracking Board</h2>
+            <p class="panel-desc" style="margin-top: 2px;">Tap any number manually to toggle its called status.</p>
+          </div>
+          <div class="legend-row">
+            <span class="legend-item"><span class="legend-dot" style="background: var(--amber-latest);"></span>Latest</span>
+            <span class="legend-item"><span class="legend-dot" style="background: var(--bingo-blue);"></span>Called</span>
+            <span class="legend-item"><span class="legend-dot" style="background: #cbd5e1;"></span>Uncalled</span>
+          </div>
+        </div>
+
+        <div id="master-board-grid" class="master-board-grid"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    /* =====================================================================
+       1. APPLICATION STATE & CLASSIC 1-90 CALLOUTS
+       ===================================================================== */
+    let currentCardMatrix = null;
+    let cardNumberCounter = 0;
+    const seenCardSignatures = new Set();
+
+    let availableBalls = [];
+    let calledHistory = [];
+    let voiceEnabled = true;
+    let availableVoices = [];
+    let autoDrawTimer = null;
+    let audioCtx = null;
+    let celebratedLine = false;
+    let celebratedHouse = false;
+
+    const BINGO_CALLOUTS = {
+      1: "Kelly's Eye, Number 1",
+      2: "One Little Duck, Number 2",
+      3: "Cup of Tea, Number 3",
+      4: "Knock at the Door, Number 4",
+      5: "Man Alive, Number 5",
+      6: "Tom Mix, Number 6",
+      7: "Lucky Seven, Number 7",
+      8: "Garden Gate, Number 8",
+      9: "Doctor's Orders, Number 9",
+      10: "Prime Minister's Den, Number 10",
+      11: "Legs Eleven, Number 11",
+      12: "One Dozen, Number 12",
+      13: "Unlucky for Some, Number 13",
+      14: "Valentine's Day, Number 14",
+      15: "Young and Keen, Number 15",
+      16: "Sweet Sixteen, Number 16",
+      17: "Dancing Queen, Number 17",
+      18: "Coming of Age, Number 18",
+      19: "Goodbye Teens, Number 19",
+      20: "One Score, Number 20",
+      21: "Key of the Door, Number 21",
+      22: "Two Little Ducks, Number 22",
+      23: "Thee and Me, Number 23",
+      24: "Two Dozen, Number 24",
+      25: "Duck and Dive, Number 25",
+      26: "Pick and Mix, Number 26",
+      27: "Gateway to Heaven, Number 27",
+      28: "In a State, Number 28",
+      29: "Rise and Shine, Number 29",
+      30: "Dirty Gertie, Number 30",
+      31: "Get Up and Run, Number 31",
+      32: "Buckle My Shoe, Number 32",
+      33: "All the Threes, Number 33",
+      34: "Ask for More, Number 34",
+      35: "Jump and Jive, Number 35",
+      36: "Three Dozen, Number 36",
+      37: "More than Eleven, Number 37",
+      38: "Christmas Cake, Number 38",
+      39: "39 Steps, Number 39",
+      40: "Life Begins, Number 40",
+      41: "Time for Fun, Number 41",
+      42: "Winnie the Pooh, Number 42",
+      43: "Down on Your Knees, Number 43",
+      44: "Droopy Drawers, Number 44",
+      45: "Halfway There, Number 45",
+      46: "Up to Tricks, Number 46",
+      47: "Four and Seven, Number 47",
+      48: "Four Dozen, Number 48",
+      49: "PC, Number 49",
+      50: "Half a Century, Number 50",
+      51: "Tweak of the Thumb, Number 51",
+      52: "Danny La Rue, Number 52",
+      53: "Here Comes Herbie, Number 53",
+      54: "Clean the Floor, Number 54",
+      55: "Snakes Alive, Number 55",
+      56: "Shotts Bus, Number 56",
+      57: "Heinz Varieties, Number 57",
+      58: "Make Them Wait, Number 58",
+      59: "Brighton Line, Number 59",
+      60: "Five Dozen, Number 60",
+      61: "Baker's Bun, Number 61",
+      62: "Turn the Screw, Number 62",
+      63: "Tickle Me 63",
+      64: "Red Raw, Number 64",
+      65: "Old Age Pension, Number 65",
+      66: "Clickety Click, Number 66",
+      67: "Stairway to Heaven, Number 67",
+      68: "Saving Grace, Number 68",
+      69: "Favourite of Mine, Number 69",
+      70: "Three Score and Ten, Number 70",
+      71: "Bang on the Drum, Number 71",
+      72: "Six Dozen, Number 72",
+      73: "Queen Bee, Number 73",
+      74: "Hit the Floor, Number 74",
+      75: "Strive and Strive, Number 75",
+      76: "Trombones, Number 76",
+      77: "Sunset Strip, Number 77",
+      78: "39 More Steps, Number 78",
+      79: "One More Time, Number 79",
+      80: "Eight and Blank, Number 80",
+      81: "Stop and Run, Number 81",
+      82: "Straight On Through, Number 82",
+      83: "Time for Tea, Number 83",
+      84: "Seven Dozen, Number 84",
+      85: "Staying Alive, Number 85",
+      86: "Between the Sticks, Number 86",
+      87: "Torquay in Devon, Number 87",
+      88: "Two Fat Ladies, Number 88",
+      89: "Nearly There, Number 89",
+      90: "Top of the Shop, Number 90"
+    };
+
+    /* =====================================================================
+       2. 90-BALL BINGO CARD GENERATOR (3x9, 15 NUMBERS, GUARANTEED UNIQUE)
+       ===================================================================== */
+    function buildValid90BallMatrix() {
+      while (true) {
+        // Distribute 15 numbers across 9 columns (each column gets 1 to 3 numbers)
+        const colCounts = new Array(9).fill(1);
+        let extra = 6;
+        while (extra > 0) {
+          const c = Math.floor(Math.random() * 9);
+          if (colCounts[c] < 3) {
+            colCounts[c]++;
+            extra--;
+          }
+        }
+
+        // Assign each column's numbers to distinct rows so every row gets exactly 5 numbers
+        const order = [0, 1, 2, 3, 4, 5, 6, 7, 8].sort(
+          (a, b) => colCounts[b] - colCounts[a] || (Math.random() - 0.5)
+        );
+        const rowCounts = [0, 0, 0];
+        const mask = [
+          new Array(9).fill(false),
+          new Array(9).fill(false),
+          new Array(9).fill(false)
+        ];
+        let ok = true;
+
+        for (const col of order) {
+          const needed = colCounts[col];
+          const rows = [0, 1, 2]
+            .filter((r) => rowCounts[r] < 5)
+            .sort((a, b) => rowCounts[a] - rowCounts[b] || (Math.random() - 0.5));
+
+          if (rows.length < needed) {
+            ok = false;
+            break;
+          }
+          for (let i = 0; i < needed; i++) {
+            mask[rows[i]][col] = true;
+            rowCounts[rows[i]]++;
+          }
+        }
+
+        if (!ok || rowCounts[0] !== 5 || rowCounts[1] !== 5 || rowCounts[2] !== 5) {
+          continue;
+        }
+
+        // Fill columns with sorted random numbers from their decade ranges
+        const grid = [
+          new Array(9).fill(null),
+          new Array(9).fill(null),
+          new Array(9).fill(null)
+        ];
+
+        for (let col = 0; col < 9; col++) {
+          const min = col === 0 ? 1 : col * 10;
+          const max = col === 8 ? 90 : col * 10 + 9;
+          const pool = [];
+          for (let n = min; n <= max; n++) pool.push(n);
+
+          for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+          }
+
+          const picked = pool.slice(0, colCounts[col]).sort((a, b) => a - b);
+          let pIdx = 0;
+          for (let r = 0; r < 3; r++) {
+            if (mask[r][col]) {
+              grid[r][col] = picked[pIdx++];
+            }
+          }
+        }
+
+        return grid;
+      }
+    }
+
+    function generateNewUniqueCard(isInitial = false) {
+      let matrix = null;
+      let signature = "";
+      let guard = 0;
+
+      do {
+        matrix = buildValid90BallMatrix();
+        signature = JSON.stringify(matrix);
+        guard++;
+      } while (seenCardSignatures.has(signature) && guard < 5000);
+
+      seenCardSignatures.add(signature);
+      currentCardMatrix = matrix;
+      cardNumberCounter++;
+      celebratedLine = false;
+      celebratedHouse = false;
+      hideWinBanner();
+
+      renderSingleCard();
+      checkCardWinState();
+
+      document.getElementById("unique-cards-counter").textContent = cardNumberCounter;
+      document.getElementById("active-card-badge").textContent = "Card #" + cardNumberCounter;
+
+      if (!isInitial) {
+        showToast("Generated unique Card NO." + cardNumberCounter);
+      }
+    }
+
+    /* =====================================================================
+       3. RENDER SINGLE VINTAGE CARD
+       ===================================================================== */
+    function getGlobeSvg() {
+      return (
+        '<svg class="globe-svg" width="32" height="26" viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+        '<ellipse cx="32" cy="26" rx="23" ry="16" stroke="#f5f2e6" stroke-width="2" />' +
+        '<ellipse cx="32" cy="26" rx="10" ry="16" stroke="#f5f2e6" stroke-width="1.6" />' +
+        '<ellipse cx="32" cy="26" rx="23" ry="7" stroke="#f5f2e6" stroke-width="1.6" />' +
+        '<line x1="5" y1="26" x2="59" y2="26" stroke="#f5f2e6" stroke-width="1.8" stroke-linecap="round" />' +
+        '<line x1="32" y1="7" x2="32" y2="45" stroke="#f5f2e6" stroke-width="1.8" stroke-linecap="round" />' +
+        "</svg>"
+      );
+    }
+
+    function getCornerDotsHtml() {
+      let html = "";
+      for (let r = 1; r <= 2; r++) {
+        const topPct = (r / 3) * 100;
+        for (let c = 1; c <= 8; c++) {
+          const leftPct = (c / 9) * 100;
+          html += '<span class="grid-dot" style="top:' + topPct + "%;left:" + leftPct + '%;"></span>';
+        }
+      }
+      return html;
+    }
+
+    function renderSingleCard() {
+      const container = document.getElementById("single-card-container");
+      if (!container || !currentCardMatrix) return;
+
+      const calledSet = new Set(calledHistory);
+      const dotsHtml = getCornerDotsHtml();
+      const globeHtml = getGlobeSvg();
+      let cellsHtml = "";
+
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 9; c++) {
+          const num = currentCardMatrix[r][c];
+          if (num !== null) {
+            const isCalled = calledSet.has(num);
+            cellsHtml +=
+              '<div class="bingo-cell number-cell' +
+              (isCalled ? " called-match" : "") +
+              '" data-num="' +
+              num +
+              '" onclick="toggleCellDab(this)" title="Number ' +
+              num +
+              ' (Tap to mark)">' +
+              '<span class="bingo-cell-num">' +
+              num +
+              "</span></div>";
+          } else {
+            cellsHtml += '<div class="bingo-cell blank-cell" aria-hidden="true">' + globeHtml + "</div>";
+          }
+        }
+      }
+
+      container.innerHTML =
+        '<article class="vintage-bingo-card">' +
+        '<div class="card-header">' +
+        '<span class="card-title-bingo">BINGO</span>' +
+        '<span class="card-serial">NO.' +
+        cardNumberCounter +
+        "</span>" +
+        "</div>" +
+        '<div class="card-grid-frame">' +
+        dotsHtml +
+        cellsHtml +
+        "</div>" +
+        "</article>";
+    }
+
+    function toggleCellDab(el) {
+      el.classList.toggle("dabbed");
+      playTapClick();
+    }
+
+    function clearAllDabs() {
+      document.querySelectorAll(".bingo-cell.dabbed").forEach((el) => {
+        el.classList.remove("dabbed");
+      });
+      showToast("Card marks cleared");
+    }
+
+    function checkCardWinState() {
+      if (!currentCardMatrix || calledHistory.length === 0) return;
+      const calledSet = new Set(calledHistory);
+      let completedRows = 0;
+
+      for (let r = 0; r < 3; r++) {
+        let rowMatched = 0;
+        for (let c = 0; c < 9; c++) {
+          const val = currentCardMatrix[r][c];
+          if (val !== null && calledSet.has(val)) {
+            rowMatched++;
+          }
+        }
+        if (rowMatched === 5) completedRows++;
+      }
+
+      const banner = document.getElementById("win-banner");
+      if (completedRows === 3 && !celebratedHouse) {
+        celebratedHouse = true;
+        banner.textContent = "FULL HOUSE! All 15 numbers on Card NO." + cardNumberCounter + " have been called!";
+        banner.classList.add("visible");
+        playWinFanfare();
+      } else if (completedRows >= 1 && !celebratedLine) {
+        celebratedLine = true;
+        banner.textContent = "LINE BINGO! You completed a full horizontal row on Card NO." + cardNumberCounter + "!";
+        banner.classList.add("visible");
+        playWinFanfare();
+      }
+    }
+
+    function hideWinBanner() {
+      const banner = document.getElementById("win-banner");
+      if (banner) {
+        banner.classList.remove("visible");
+        banner.textContent = "";
+      }
+    }
+
+    /* =====================================================================
+       4. WEB AUDIO CHIME + WEB SPEECH API VOICE CALLER
+       ===================================================================== */
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) audioCtx = new Ctx();
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+    }
+
+    function playBallChime() {
+      if (!voiceEnabled) return;
+      try {
+        ensureAudioContext();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.14); // A5
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.29);
+      } catch (e) {}
+    }
+
+    function playTapClick() {
+      try {
+        ensureAudioContext();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(320, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } catch (e) {}
+    }
+
+    function playWinFanfare() {
+      if (!voiceEnabled) return;
+      try {
+        ensureAudioContext();
+        if (!audioCtx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const start = audioCtx.currentTime + idx * 0.11;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.16, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.32);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(start);
+          osc.stop(start + 0.34);
+        });
+      } catch (e) {}
+    }
+
+    function populateVoiceList() {
+      if (!("speechSynthesis" in window)) return;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return;
+
+      availableVoices = voices;
+      const select = document.getElementById("voice-select");
+      if (!select) return;
+
+      const prev = select.value;
+      const sorted = [...voices].sort((a, b) => {
+        const aEn = a.lang && a.lang.toLowerCase().startsWith("en") ? 0 : 1;
+        const bEn = b.lang && b.lang.toLowerCase().startsWith("en") ? 0 : 1;
+        if (aEn !== bEn) return aEn - bEn;
+        return a.name.localeCompare(b.name);
+      });
+
+      select.innerHTML = sorted
+        .map((v) => '<option value="' + v.name.replace(/"/g, "&quot;") + '">' + v.name + " (" + v.lang + ")</option>")
+        .join("");
+
+      if (prev && sorted.some((v) => v.name === prev)) {
+        select.value = prev;
+      } else {
+        const best =
+          sorted.find((v) => v.default && v.lang.toLowerCase().startsWith("en")) ||
+          sorted.find((v) => v.lang.toLowerCase().startsWith("en")) ||
+          sorted[0];
+        if (best) select.value = best.name;
+      }
+    }
+
+    function speakPhrase(text) {
+      if (!voiceEnabled) return;
+      playBallChime();
+
+      if (!("speechSynthesis" in window)) return;
+      try {
+        if (availableVoices.length === 0) populateVoiceList();
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        window.speechSynthesis.cancel();
+
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.volume = 1.0;
+        utter.rate = 0.96;
+        utter.pitch = 1.0;
+
+        const select = document.getElementById("voice-select");
+        if (select && select.value && availableVoices.length > 0) {
+          const found = availableVoices.find((v) => v.name === select.value);
+          if (found) utter.voice = found;
+        }
+
+        window._bingoUtterance = utter;
+        utter.onend = () => { window._bingoUtterance = null; };
+        utter.onerror = () => { window._bingoUtterance = null; };
+
+        setTimeout(() => {
+          window.speechSynthesis.speak(utter);
+        }, 35);
+      } catch (e) {}
+    }
+
+    function testCallerVoice() {
+      ensureAudioContext();
+      if (!voiceEnabled) toggleVoice();
+      speakPhrase("Eyes down for a full house! Testing the Bingo caller voice.");
+      showToast("Testing caller audio & speech...");
+    }
+
+    /* =====================================================================
+       5. 1-90 CALLER & MASTER BOARD LOGIC
+       ===================================================================== */
+    function initCallerState() {
+      availableBalls = Array.from({ length: 90 }, (_, i) => i + 1);
+      calledHistory = [];
+      celebratedLine = false;
+      celebratedHouse = false;
+      hideWinBanner();
+      stopAutoDraw();
+      renderMasterBoard();
+      updateCallerUI();
+    }
+
+    function renderMasterBoard() {
+      const board = document.getElementById("master-board-grid");
+      const latest = calledHistory.length > 0 ? calledHistory[0] : null;
+      const calledSet = new Set(calledHistory);
+      let html = "";
+
+      for (let n = 1; n <= 90; n++) {
+        let cls = "master-ball";
+        if (n === latest) cls += " latest";
+        else if (calledSet.has(n)) cls += " called";
+
+        html +=
+          '<button type="button" class="' +
+          cls +
+          '" onclick="toggleManualBall(' +
+          n +
+          ')" title="Toggle number ' +
+          n +
+          '">' +
+          n +
+          "</button>";
+      }
+
+      board.innerHTML = html;
+    }
+
+    function drawNextNumber() {
+      ensureAudioContext();
+      if (availableBalls.length === 0) {
+        stopAutoDraw();
+        showToast("All 90 numbers have been drawn!");
+        return;
+      }
+
+      const idx = Math.floor(Math.random() * availableBalls.length);
+      const drawn = availableBalls.splice(idx, 1)[0];
+      calledHistory.unshift(drawn);
+
+      updateCallerUI();
+      renderMasterBoard();
+      syncCalledHighlightsOnCard();
+      checkCardWinState();
+      speakPhrase(BINGO_CALLOUTS[drawn] || "Number " + drawn);
+
+      if (availableBalls.length === 0) {
+        stopAutoDraw();
+        showToast("Game complete! All 90 numbers drawn.");
+      }
+    }
+
+    function toggleManualBall(num) {
+      ensureAudioContext();
+      const idx = calledHistory.indexOf(num);
+      if (idx !== -1) {
+        calledHistory.splice(idx, 1);
+        availableBalls.push(num);
+        availableBalls.sort((a, b) => a - b);
+      } else {
+        const aIdx = availableBalls.indexOf(num);
+        if (aIdx !== -1) availableBalls.splice(aIdx, 1);
+        calledHistory.unshift(num);
+        speakPhrase(BINGO_CALLOUTS[num] || "Number " + num);
+      }
+
+      updateCallerUI();
+      renderMasterBoard();
+      syncCalledHighlightsOnCard();
+      checkCardWinState();
+    }
+
+    function updateCallerUI() {
+      document.getElementById("remaining-count").textContent = availableBalls.length + " Remaining";
+      document.getElementById("called-total-badge").textContent = calledHistory.length + " / 90";
+
+      const numEl = document.getElementById("current-number-display");
+      const phraseEl = document.getElementById("number-callout-phrase");
+      const histEl = document.getElementById("recent-history-list");
+
+      if (calledHistory.length === 0) {
+        numEl.textContent = "--";
+        phraseEl.textContent = 'Ready! Tap "Draw Next Number"';
+        histEl.innerHTML =
+          '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">No numbers called yet.</span>';
+        return;
+      }
+
+      const latest = calledHistory[0];
+      numEl.textContent = latest;
+      phraseEl.textContent = BINGO_CALLOUTS[latest] || "Number " + latest;
+
+      histEl.innerHTML = calledHistory
+        .slice(0, 10)
+        .map(
+          (n, i) =>
+            '<span class="history-ball' + (i === 0 ? " latest" : "") + '">' + n + "</span>"
+        )
+        .join("");
+    }
+
+    function syncCalledHighlightsOnCard() {
+      const calledSet = new Set(calledHistory);
+      document.querySelectorAll(".bingo-cell.number-cell").forEach((cell) => {
+        const val = parseInt(cell.getAttribute("data-num"), 10);
+        if (calledSet.has(val)) cell.classList.add("called-match");
+        else cell.classList.remove("called-match");
+      });
+    }
+
+    function toggleVoice() {
+      ensureAudioContext();
+      voiceEnabled = !voiceEnabled;
+      const btn = document.getElementById("btn-voice-toggle");
+      const label = document.getElementById("voice-label");
+
+      if (voiceEnabled) {
+        label.textContent = "Voice: ON";
+        btn.classList.add("btn-voice-active");
+        showToast("Voice & sound effects ON");
+      } else {
+        label.textContent = "Voice: OFF";
+        btn.classList.remove("btn-voice-active");
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        showToast("Voice & sound effects muted");
+      }
+    }
+
+    function toggleAutoDraw() {
+      ensureAudioContext();
+      if (autoDrawTimer) {
+        stopAutoDraw();
+        showToast("Auto-Draw stopped");
+      } else {
+        if (availableBalls.length === 0) {
+          showToast("All 90 balls already drawn. Reset first!");
+          return;
+        }
+        document.getElementById("auto-dot").style.background = "#10b981";
+        document.getElementById("auto-label").textContent = "Auto-Draw: ON";
+        drawNextNumber();
+        autoDrawTimer = setInterval(drawNextNumber, 4000);
+        showToast("Auto-Draw started (every 4s)");
+      }
+    }
+
+    function stopAutoDraw() {
+      if (autoDrawTimer) {
+        clearInterval(autoDrawTimer);
+        autoDrawTimer = null;
+      }
+      const dot = document.getElementById("auto-dot");
+      const label = document.getElementById("auto-label");
+      if (dot) dot.style.background = "#94a3b8";
+      if (label) label.textContent = "Auto-Draw: OFF";
+    }
+
+    function resetCallerGame() {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      initCallerState();
+      syncCalledHighlightsOnCard();
+      showToast("Caller & 1–90 Master Board reset");
+    }
+
+    /* =====================================================================
+       6. TOAST NOTIFICATIONS & BOOTSTRAP
+       ===================================================================== */
+    let toastTimer = null;
+    function showToast(msg) {
+      const box = document.getElementById("toast-box");
+      const text = document.getElementById("toast-message");
+      text.textContent = msg;
+      box.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.remove("show");
+      }, 2400);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      if ("speechSynthesis" in window) {
+        populateVoiceList();
+        window.speechSynthesis.onvoiceschanged = populateVoiceList;
+      }
+      generateNewUniqueCard(true);
+      initCallerState();
+    });
+  </script>
+</body>
+</html>
