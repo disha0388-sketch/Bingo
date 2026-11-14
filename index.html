@@ -19,6 +19,7 @@
       --bingo-blue-light: #e0f2fe;
       --dauber-red: #dc2626;
       --dauber-glow: rgba(220, 38, 38, 0.35);
+      --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 14px;
       --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
@@ -194,7 +195,7 @@
       </div>
     </div>
   </div>
-  <script>
+    <script>
     const bingoNicknames = {
       1: "Kelly's Eye, number 1", 2: "One little duck, number 2", 3: "Cup of tea, number 3", 4: "Knock at the door, number 4", 5: "Man alive, number 5",
       6: "Half a dozen, number 6", 7: "Lucky seven, number 7", 8: "Garden gate, number 8", 9: "Doctor's orders, number 9", 10: "Prime minister's den, number 10",
@@ -410,4 +411,50 @@
     }
 
     function stopAutoDraw() {
-     
+      isAutoRunning = false;
+      clearInterval(autoDrawInterval);
+      const btn = document.getElementById('auto-draw-btn');
+      if (btn) btn.innerText = "Auto-Draw: Off";
+    }
+
+    function loadVoices() {
+      if (!('speechSynthesis' in window)) return;
+      availableVoices = window.speechSynthesis.getVoices();
+      const select = document.getElementById('voice-select');
+      if (!select) return;
+      select.innerHTML = '';
+      availableVoices.forEach((voice, index) => {
+        let opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = `${voice.name} (${voice.lang})`;
+        if (voice.lang.includes('en') && (voice.name.includes('Google') || voice.name.includes('Samantha') || voice.name.includes('Daniel'))) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      let utterance = new SpeechSynthesisUtterance(text);
+      let select = document.getElementById('voice-select');
+      if (select && select.value !== '' && availableVoices[select.value]) utterance.voice = availableVoices[select.value];
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function testVoice() {
+      speakText("Testing bingo voice caller. Eyes down, look in!");
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      generateCardData();
+      renderCard(currentCardData);
+      initCaller();
+      setTimeout(loadVoices, 300);
+    });
+  </script>
+</body>
+</html>
