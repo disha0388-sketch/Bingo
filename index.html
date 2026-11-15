@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>1–90 Bingo & Vintage Card Generator</title>
+  <title>1–75 Bingo & Vintage Card Generator</title>
   <style>
     :root {
       --card-cream: #f4f0e4;
@@ -38,7 +38,7 @@
 
     @media (min-width: 900px) {
       .app-container {
-        grid-template-columns: 360px 1fr;
+        grid-template-columns: 380px 1fr;
         align-items: start;
       }
     }
@@ -76,16 +76,16 @@
     }
 
     .bingo-ball {
-      width: 104px;
-      height: 104px;
+      width: 112px;
+      height: 112px;
       border-radius: 50%;
       background: radial-gradient(circle at 32% 28%, #ffffff 0%, #e4ecf7 55%, #a7bddb 100%);
       color: var(--bingo-blue-dark);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 2.75rem;
-      font-weight: 900;
+      line-height: 1;
       box-shadow: 0 10px 20px rgba(0,0,0,0.45), inset 0 -6px 12px rgba(0,0,0,0.2);
       border: 4px solid var(--bingo-blue);
       transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -93,7 +93,19 @@
 
     .bingo-ball.pop { transform: scale(1.08); }
 
-    .call-nickname {
+    .ball-letter {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--bingo-blue);
+      margin-bottom: 2px;
+    }
+
+    .ball-number {
+      font-size: 2.5rem;
+      font-weight: 900;
+    }
+
+    .call-status {
       margin-top: 10px;
       font-size: 0.92rem;
       color: var(--accent-gold);
@@ -120,7 +132,6 @@
     }
 
     button:active { transform: scale(0.98); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
 
     .btn-primary {
       background: var(--bingo-blue-light);
@@ -143,7 +154,7 @@
     .toggle-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       font-size: 0.82rem;
       color: #cbd5e1;
       margin-bottom: 14px;
@@ -156,11 +167,25 @@
       cursor: pointer;
     }
 
-    /* MASTER 1-90 BOARD */
-    .master-grid {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
+    /* MASTER 1-75 BOARD (B-I-N-G-O ROWS) */
+    .master-board {
+      display: flex;
+      flex-direction: column;
       gap: 4px;
+    }
+
+    .master-row {
+      display: grid;
+      grid-template-columns: 22px repeat(15, 1fr);
+      gap: 2px;
+      align-items: center;
+    }
+
+    .master-row-letter {
+      font-weight: 900;
+      font-size: 0.8rem;
+      color: var(--accent-gold);
+      text-align: center;
     }
 
     .master-cell {
@@ -168,9 +193,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       font-weight: 700;
-      border-radius: 4px;
+      border-radius: 3px;
       background: #1a1f26;
       color: #64748b;
       border: 1px solid #2b323e;
@@ -188,7 +213,7 @@
       border-color: #fff;
     }
 
-    /* VINTAGE BINGO TICKET (MATCHING PHOTO) */
+    /* VINTAGE 1-75 BINGO CARD */
     .ticket-actions {
       display: flex;
       flex-wrap: wrap;
@@ -203,7 +228,7 @@
       color: #fff;
       padding: 8px 10px;
       border-radius: 7px;
-      width: 90px;
+      width: 85px;
       font-weight: 700;
     }
 
@@ -222,58 +247,64 @@
     .status-banner.visible { display: block; }
 
     .tickets-wrapper {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 16px;
     }
 
-    .vintage-ticket {
+    .vintage-card {
       background: linear-gradient(145deg, var(--card-cream) 0%, var(--card-cream-dark) 100%);
       border-radius: 14px;
       padding: 12px 14px 14px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.6);
       color: var(--bingo-blue);
       user-select: none;
-      max-width: 620px;
+      max-width: 390px;
       width: 100%;
       margin: 0 auto;
     }
 
-    .ticket-header {
+    .card-top-meta {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      padding: 0 4px 5px;
+      padding: 0 4px 4px;
+      font-size: 0.82rem;
       font-weight: 900;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
     }
 
-    .ticket-title {
-      font-size: 1.25rem;
-      color: var(--bingo-blue);
-      font-family: "Arial Black", Impact, sans-serif;
-    }
-
-    .ticket-serial {
-      font-size: 0.85rem;
-      color: var(--bingo-blue);
-      font-weight: 800;
-    }
-
-    .ticket-outer-frame {
+    .card-outer-frame {
       border: 2.5px solid var(--bingo-blue);
       padding: 2px;
       background: var(--card-cream);
     }
 
-    .ticket-grid {
+    .bingo-header-row {
       display: grid;
-      grid-template-columns: repeat(9, 1fr);
+      grid-template-columns: repeat(5, 1fr);
+      background: var(--bingo-blue);
+      color: var(--card-cream);
+      border: 1.5px solid var(--bingo-blue);
+      border-bottom: none;
+    }
+
+    .bingo-header-cell {
+      text-align: center;
+      font-family: "Arial Black", Impact, sans-serif;
+      font-size: 1.55rem;
+      padding: 4px 0;
+      letter-spacing: 0.04em;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       border: 1.5px solid var(--bingo-blue);
     }
 
-    .ticket-cell {
-      aspect-ratio: 1 / 1.05;
+    .card-cell {
+      aspect-ratio: 1;
       border: 1px solid var(--bingo-blue);
       display: flex;
       align-items: center;
@@ -281,38 +312,42 @@
       position: relative;
       font-family: "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
       font-weight: 800;
-      font-size: clamp(1.05rem, 3.6vw, 1.65rem);
+      font-size: clamp(1.25rem, 4.5vw, 1.8rem);
       color: var(--ink-dark);
       background: var(--card-cream);
-    }
-
-    .ticket-cell.number-cell {
       cursor: pointer;
     }
 
-    .ticket-cell.number-cell:hover {
-      background: #eae3cf;
-    }
+    .card-cell:hover { background: #eae3cf; }
 
-    /* Blue crosshair/target blank square matching the photo */
-    .ticket-cell.blank-cell {
+    /* Center FREE space styled like the blue crosshair square */
+    .card-cell.free-space {
       background-color: var(--bingo-blue);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='22' fill='none' stroke='%23f4f0e4' stroke-width='1.5' stroke-opacity='0.65'/%3E%3Ccircle cx='30' cy='30' r='14' fill='none' stroke='%23f4f0e4' stroke-width='1.4' stroke-opacity='0.65'/%3E%3Ccircle cx='30' cy='30' r='6' fill='none' stroke='%23f4f0e4' stroke-width='1.4' stroke-opacity='0.75'/%3E%3Cline x1='30' y1='3' x2='30' y2='57' stroke='%23f4f0e4' stroke-width='1.4' stroke-opacity='0.7'/%3E%3Cline x1='3' y1='30' x2='57' y2='30' stroke='%23f4f0e4' stroke-width='1.4' stroke-opacity='0.7'/%3E%3C/svg%3E");
-      background-size: 86% 86%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='22' fill='none' stroke='%23f4f0e4' stroke-width='1.5' stroke-opacity='0.45'/%3E%3Ccircle cx='30' cy='30' r='14' fill='none' stroke='%23f4f0e4' stroke-width='1.4' stroke-opacity='0.45'/%3E%3Cline x1='30' y1='3' x2='30' y2='57' stroke='%23f4f0e4' stroke-width='1.2' stroke-opacity='0.45'/%3E%3Cline x1='3' y1='30' x2='57' y2='30' stroke='%23f4f0e4' stroke-width='1.2' stroke-opacity='0.45'/%3E%3C/svg%3E");
+      background-size: 88% 88%;
       background-repeat: no-repeat;
       background-position: center;
+      color: var(--card-cream);
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
+      font-weight: 900;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
     }
 
-    /* Dauber stamp */
-    .ticket-cell.daubed::after {
+    .card-cell.daubed::after {
       content: "";
       position: absolute;
       width: 78%;
       height: 78%;
       border-radius: 50%;
-      background: rgba(21, 83, 158, 0.32);
-      border: 2.5px solid rgba(21, 83, 158, 0.85);
+      background: rgba(21, 83, 158, 0.34);
+      border: 2.5px solid rgba(21, 83, 158, 0.88);
       pointer-events: none;
+    }
+
+    .card-cell.free-space.daubed::after {
+      border-color: var(--card-cream);
+      background: rgba(244, 240, 228, 0.22);
     }
 
     @media print {
@@ -320,10 +355,10 @@
       .caller-panel, .ticket-actions, .status-banner, h2 { display: none !important; }
       .app-container { display: block; }
       .panel { border: none; box-shadow: none; background: transparent; padding: 0; }
-      .vintage-ticket {
+      .tickets-wrapper { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .vintage-card {
         box-shadow: none;
         border: 1px solid #999;
-        margin-bottom: 14px;
         page-break-inside: avoid;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -331,23 +366,26 @@
     }
   </style>
 </head>
-  <body>
+<body>
 
 <div class="app-container">
-  <!-- LEFT: 1-90 CALLER -->
+  <!-- LEFT: 1-75 BINGO CALLER -->
   <section class="panel caller-panel">
     <h2>
-      <span>1–90 Bingo Caller</span>
-      <span id="drawCount">0 / 90</span>
+      <span>1–75 Bingo Caller</span>
+      <span id="drawCount">0 / 75</span>
     </h2>
 
     <div class="ball-stage">
-      <div class="bingo-ball" id="currentBall">--</div>
-      <div class="call-nickname" id="callNickname">Tap "Draw Number" to begin</div>
+      <div class="bingo-ball" id="currentBall">
+        <span class="ball-letter" id="ballLetter">BINGO</span>
+        <span class="ball-number" id="ballNumber">--</span>
+      </div>
+      <div class="call-status" id="callStatus">Tap "Draw Ball" to begin</div>
     </div>
 
     <div class="controls-row">
-      <button class="btn-primary" id="drawBtn">Draw Number (1–90)</button>
+      <button class="btn-primary" id="drawBtn">Draw Ball (1–75)</button>
       <button class="btn-secondary" id="autoCallBtn">Auto-Call: Off</button>
       <button class="btn-danger" id="resetGameBtn">Reset Game</button>
     </div>
@@ -357,19 +395,19 @@
       <label><input type="checkbox" id="autoDaubToggle" /> Auto-Daub Card</label>
     </div>
 
-    <h2><span>Master Checkboard</span></h2>
-    <div class="master-grid" id="masterGrid"></div>
+    <h2><span>Master 1–75 Board</span></h2>
+    <div class="master-board" id="masterBoard"></div>
   </section>
 
-  <!-- RIGHT: VINTAGE CARD GENERATOR -->
+  <!-- RIGHT: VINTAGE 1-75 CARD GENERATOR -->
   <section class="panel">
-    <h2><span>Vintage Ticket Generator</span></h2>
+    <h2><span>Vintage 1–75 Card Generator</span></h2>
 
     <div class="ticket-actions">
       <label style="font-size:0.85rem;color:#cbd5e1;">Card No:</label>
       <input type="number" id="serialInput" value="15" min="1" max="9999" />
-      <button class="btn-secondary" id="newCardBtn">New Card</button>
-      <button class="btn-secondary" id="stripBtn">6-Card Strip</button>
+      <button class="btn-secondary" id="newCardBtn">1 Card</button>
+      <button class="btn-secondary" id="fourCardsBtn">4-Card Sheet</button>
       <button class="btn-secondary" id="printBtn">Print</button>
     </div>
 
@@ -380,223 +418,224 @@
 </div>
 
 <script>
-  const NICKNAMES = {
-    1: "Kelly's Eye", 2: "One Little Duck", 3: "Cup of Tea", 4: "Knock at the Door",
-    5: "Man Alive", 6: "Tom Mix", 7: "Lucky Seven", 8: "Garden Gate", 9: "Doctor's Orders",
-    10: "Prime Minister's Den", 11: "Legs Eleven", 12: "One Dozen", 13: "Unlucky for Some",
-    16: "Sweet Sixteen", 18: "Coming of Age", 21: "Key of the Door", 22: "Two Little Ducks",
-    30: "Dirty Gertie", 33: "All the Threes", 40: "Life Begins", 44: "Droopy Drawers",
-    50: "Half a Century", 55: "Snakes Alive", 66: "Clickety Click", 77: "Sunset Strip",
-    88: "Two Fat Ladies", 90: "Top of the Shop"
-  };
-
+  const LETTERS = ["B", "I", "N", "G", "O"];
   let pool = [];
   let calledNumbers = [];
   let autoCallTimer = null;
-  let currentTickets = [];
+  let currentCards = [];
 
   const currentBallEl = document.getElementById("currentBall");
-  const callNicknameEl = document.getElementById("callNickname");
+  const ballLetterEl = document.getElementById("ballLetter");
+  const ballNumberEl = document.getElementById("ballNumber");
+  const callStatusEl = document.getElementById("callStatus");
   const drawCountEl = document.getElementById("drawCount");
-  const masterGridEl = document.getElementById("masterGrid");
+  const masterBoardEl = document.getElementById("masterBoard");
   const ticketsWrapperEl = document.getElementById("ticketsWrapper");
   const winBannerEl = document.getElementById("winBanner");
   const serialInputEl = document.getElementById("serialInput");
 
-  function buildMasterGrid() {
-    masterGridEl.innerHTML = "";
-    for (let i = 1; i <= 90; i++) {
-      const cell = document.createElement("div");
-      cell.className = "master-cell";
-      cell.id = `master-${i}`;
-      cell.textContent = i;
-      masterGridEl.appendChild(cell);
-    }
+  function getLetterForNumber(num) {
+    if (num <= 15) return "B";
+    if (num <= 30) return "I";
+    if (num <= 45) return "N";
+    if (num <= 60) return "G";
+    return "O";
   }
 
-  function generateSingleTicketData() {
-    const colRanges = [
-      [1, 9], [10, 19], [20, 29], [30, 39], [40, 49],
-      [50, 59], [60, 69], [70, 79], [80, 90]
-    ];
+  function buildMasterBoard() {
+    masterBoardEl.innerHTML = "";
+    LETTERS.forEach((letter, rowIdx) => {
+      const row = document.createElement("div");
+      row.className = "master-row";
 
-    let layout;
-    let valid = false;
-    while (!valid) {
-      layout = Array.from({ length: 3 }, () => Array(9).fill(0));
-      const colCounts = Array(9).fill(0);
+      const label = document.createElement("div");
+      label.className = "master-row-letter";
+      label.textContent = letter;
+      row.appendChild(label);
 
-      for (let r = 0; r < 3; r++) {
-        const cols = [0, 1, 2, 3, 4, 5, 6, 7, 8].sort(() => Math.random() - 0.5).slice(0, 5);
-        cols.forEach(c => {
-          layout[r][c] = 1;
-          colCounts[c]++;
-        });
+      const start = rowIdx * 15 + 1;
+      for (let n = start; n < start + 15; n++) {
+        const cell = document.createElement("div");
+        cell.className = "master-cell";
+        cell.id = `master-${n}`;
+        cell.textContent = n;
+        row.appendChild(cell);
       }
-      valid = colCounts.every(count => count >= 1 && count <= 3);
-    }
+      masterBoardEl.appendChild(row);
+    });
+  }
 
-    const grid = Array.from({ length: 3 }, () => Array(9).fill(null));
-    for (let c = 0; c < 9; c++) {
-      const [min, max] = colRanges[c];
-      const available = [];
-      for (let n = min; n <= max; n++) available.push(n);
-      available.sort(() => Math.random() - 0.5);
-
-      const needed = layout.reduce((sum, row) => sum + row[c], 0);
-      const chosen = available.slice(0, needed).sort((a, b) => a - b);
-
-      let idx = 0;
-      for (let r = 0; r < 3; r++) {
-        if (layout[r][c] === 1) {
-          grid[r][c] = chosen[idx++];
-        }
+  function generate5x5CardData() {
+    const grid = Array.from({ length: 5 }, () => Array(5).fill(null));
+    for (let c = 0; c < 5; c++) {
+      const min = c * 15 + 1;
+      const nums = Array.from({ length: 15 }, (_, i) => min + i)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 5);
+      for (let r = 0; r < 5; r++) {
+        grid[r][c] = (r === 2 && c === 2) ? "FREE" : nums[r];
       }
     }
     return grid;
   }
 
-  function renderTickets(count = 1) {
+  function renderCards(count = 1) {
     ticketsWrapperEl.innerHTML = "";
     winBannerEl.classList.remove("visible");
-    currentTickets = [];
+    currentCards = [];
     const startSerial = parseInt(serialInputEl.value, 10) || 15;
 
-    for (let t = 0; t < count; t++) {
-      const gridData = generateSingleTicketData();
-      const serialNum = startSerial + t;
-      currentTickets.push({ serial: serialNum, grid: gridData, daubed: new Set() });
+    for (let idx = 0; idx < count; idx++) {
+      const gridData = generate5x5CardData();
+      const serialNum = startSerial + idx;
+      const daubedMatrix = Array.from({ length: 5 }, (_, r) =>
+        Array.from({ length: 5 }, (_, c) => r === 2 && c === 2)
+      );
+      currentCards.push({ serial: serialNum, grid: gridData, daubed: daubedMatrix });
 
-      const ticketEl = document.createElement("div");
-      ticketEl.className = "vintage-ticket";
-      ticketEl.innerHTML = `
-        <div class="ticket-header">
-          <span class="ticket-title">BINGO</span>
-          <span class="ticket-serial">NO. ${serialNum}</span>
+      const cardEl = document.createElement("div");
+      cardEl.className = "vintage-card";
+      cardEl.innerHTML = `
+        <div class="card-top-meta">
+          <span>SERIES 75</span>
+          <span>NO. ${serialNum}</span>
         </div>
-        <div class="ticket-outer-frame">
-          <div class="ticket-grid"></div>
+        <div class="card-outer-frame">
+          <div class="bingo-header-row">
+            <div class="bingo-header-cell">B</div>
+            <div class="bingo-header-cell">I</div>
+            <div class="bingo-header-cell">N</div>
+            <div class="bingo-header-cell">G</div>
+            <div class="bingo-header-cell">O</div>
+          </div>
+          <div class="card-grid"></div>
         </div>
       `;
 
-      const gridEl = ticketEl.querySelector(".ticket-grid");
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 9; c++) {
+      const gridEl = cardEl.querySelector(".card-grid");
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
           const val = gridData[r][c];
           const cell = document.createElement("div");
-          if (val === null) {
-            cell.className = "ticket-cell blank-cell";
+          cell.className = "card-cell";
+          cell.dataset.cardIdx = idx;
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+
+          if (val === "FREE") {
+            cell.classList.add("free-space", "daubed");
+            cell.textContent = "FREE";
           } else {
-            cell.className = "ticket-cell number-cell";
             cell.textContent = val;
             cell.dataset.num = val;
-            cell.dataset.ticketIndex = t;
             if (calledNumbers.includes(val) && document.getElementById("autoDaubToggle").checked) {
               cell.classList.add("daubed");
-              currentTickets[t].daubed.add(val);
+              daubedMatrix[r][c] = true;
             }
-            cell.addEventListener("click", () => toggleDaub(cell, t, val));
           }
+
+          cell.addEventListener("click", () => toggleCellDaub(cell, idx, r, c));
           gridEl.appendChild(cell);
         }
       }
-      ticketsWrapperEl.appendChild(ticketEl);
+      ticketsWrapperEl.appendChild(cardEl);
     }
   }
 
-  function toggleDaub(cell, ticketIdx, num) {
-    const ticket = currentTickets[ticketIdx];
-    if (ticket.daubed.has(num)) {
-      ticket.daubed.delete(num);
-      cell.classList.remove("daubed");
-    } else {
-      ticket.daubed.add(num);
-      cell.classList.add("daubed");
-    }
-    checkWins(ticketIdx);
+  function toggleCellDaub(cell, cardIdx, r, c) {
+    const card = currentCards[cardIdx];
+    card.daubed[r][c] = !card.daubed[r][c];
+    cell.classList.toggle("daubed", card.daubed[r][c]);
+    checkBingoWin(cardIdx);
   }
 
-  function checkWins(ticketIdx) {
-    const ticket = currentTickets[ticketIdx];
-    const daubedCount = ticket.daubed.size;
-    let linesComplete = 0;
+  function checkBingoWin(cardIdx) {
+    const { serial, daubed } = currentCards[cardIdx];
+    let hasLine = false;
 
-    for (let r = 0; r < 3; r++) {
-      const rowNums = ticket.grid[r].filter(n => n !== null);
-      if (rowNums.every(n => ticket.daubed.has(n))) linesComplete++;
+    for (let i = 0; i < 5; i++) {
+      if (daubed[i].every(Boolean)) hasLine = true;
+      if ([0, 1, 2, 3, 4].every(r => daubed[r][i])) hasLine = true;
     }
+    if ([0, 1, 2, 3, 4].every(i => daubed[i][i])) hasLine = true;
+    if ([0, 1, 2, 3, 4].every(i => daubed[i][4 - i])) hasLine = true;
 
-    if (daubedCount === 15) {
-      showWin(`FULL HOUSE on Card NO. ${ticket.serial}!`);
-    } else if (linesComplete > 0) {
-      showWin(`${linesComplete} Line${linesComplete > 1 ? "s" : ""} Complete on Card NO. ${ticket.serial}!`);
-    } else if (daubedCount === 5) {
-      showWin(`Early Five on Card NO. ${ticket.serial}!`);
+    const isBlackout = daubed.every(row => row.every(Boolean));
+    if (isBlackout) {
+      winBannerEl.textContent = `BLACKOUT COVERALL on Card NO. ${serial}!`;
+      winBannerEl.classList.add("visible");
+    } else if (hasLine) {
+      winBannerEl.textContent = `BINGO! 5-in-a-row on Card NO. ${serial}!`;
+      winBannerEl.classList.add("visible");
     }
   }
 
-  function showWin(msg) {
-    winBannerEl.textContent = msg;
-    winBannerEl.classList.add("visible");
-  }
-
-  function speakNumber(num) {
+  function speakCall(letter, num) {
     if (!document.getElementById("voiceToggle").checked || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
-    const text = NICKNAMES[num] ? `${num}. ${NICKNAMES[num]}` : `Number ${num}`;
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(`${letter} ${num}`);
     utterance.rate = 0.95;
     window.speechSynthesis.speak(utterance);
   }
 
-  function drawNumber() {
+  function drawBall() {
     if (pool.length === 0) {
       stopAutoCall();
-      callNicknameEl.textContent = "All 90 numbers called!";
+      callStatusEl.textContent = "All 75 balls called!";
       return;
     }
 
     const randIdx = Math.floor(Math.random() * pool.length);
     const num = pool.splice(randIdx, 1)[0];
+    const letter = getLetterForNumber(num);
     calledNumbers.push(num);
 
-    currentBallEl.textContent = num;
+    ballLetterEl.textContent = letter;
+    ballNumberEl.textContent = num;
     currentBallEl.classList.remove("pop");
     void currentBallEl.offsetWidth;
     currentBallEl.classList.add("pop");
 
-    callNicknameEl.textContent = NICKNAMES[num] || `Number ${num}`;
-    drawCountEl.textContent = `${calledNumbers.length} / 90`;
+    callStatusEl.textContent = `Last Call: ${letter}-${num}`;
+    drawCountEl.textContent = `${calledNumbers.length} / 75`;
 
     document.querySelectorAll(".master-cell.latest").forEach(el => el.classList.remove("latest"));
     const masterCell = document.getElementById(`master-${num}`);
-    if (masterCell) {
-      masterCell.classList.add("called", "latest");
-    }
+    if (masterCell) masterCell.classList.add("called", "latest");
 
     if (document.getElementById("autoDaubToggle").checked) {
-      document.querySelectorAll(`.number-cell[data-num="${num}"]`).forEach(cell => {
-        const tIdx = parseInt(cell.dataset.ticketIndex, 10);
-        if (!currentTickets[tIdx].daubed.has(num)) {
-          toggleDaub(cell, tIdx, num);
+      document.querySelectorAll(`.card-cell[data-num="${num}"]`).forEach(cell => {
+        const cIdx = parseInt(cell.dataset.cardIdx, 10);
+        const r = parseInt(cell.dataset.row, 10);
+        const c = parseInt(cell.dataset.col, 10);
+        if (!currentCards[cIdx].daubed[r][c]) {
+          toggleCellDaub(cell, cIdx, r, c);
         }
       });
     }
 
-    speakNumber(num);
+    speakCall(letter, num);
   }
 
   function resetGame() {
     stopAutoCall();
-    pool = Array.from({ length: 90 }, (_, i) => i + 1);
+    pool = Array.from({ length: 75 }, (_, i) => i + 1);
     calledNumbers = [];
-    currentBallEl.textContent = "--";
-    callNicknameEl.textContent = 'Tap "Draw Number" to begin';
-    drawCountEl.textContent = "0 / 90";
+    ballLetterEl.textContent = "BINGO";
+    ballNumberEl.textContent = "--";
+    callStatusEl.textContent = 'Tap "Draw Ball" to begin';
+    drawCountEl.textContent = "0 / 75";
     document.querySelectorAll(".master-cell").forEach(el => el.classList.remove("called", "latest"));
-    document.querySelectorAll(".number-cell").forEach(el => el.classList.remove("daubed"));
-    currentTickets.forEach(t => t.daubed.clear());
     winBannerEl.classList.remove("visible");
+
+    document.querySelectorAll(".card-cell").forEach(cell => {
+      const cIdx = parseInt(cell.dataset.cardIdx, 10);
+      const r = parseInt(cell.dataset.row, 10);
+      const c = parseInt(cell.dataset.col, 10);
+      const isFree = r === 2 && c === 2;
+      currentCards[cIdx].daubed[r][c] = isFree;
+      cell.classList.toggle("daubed", isFree);
+    });
   }
 
   function stopAutoCall() {
@@ -607,31 +646,30 @@
     }
   }
 
-  document.getElementById("drawBtn").addEventListener("click", drawNumber);
+  document.getElementById("drawBtn").addEventListener("click", drawBall);
   document.getElementById("resetGameBtn").addEventListener("click", resetGame);
 
   document.getElementById("autoCallBtn").addEventListener("click", () => {
     if (autoCallTimer) {
       stopAutoCall();
     } else {
-      drawNumber();
-      autoCallTimer = setInterval(drawNumber, 4000);
+      drawBall();
+      autoCallTimer = setInterval(drawBall, 4000);
       document.getElementById("autoCallBtn").textContent = "Auto-Call: On (4s)";
     }
   });
 
   document.getElementById("newCardBtn").addEventListener("click", () => {
     serialInputEl.value = (parseInt(serialInputEl.value, 10) || 15) + 1;
-    renderTickets(1);
+    renderCards(1);
   });
 
-  document.getElementById("stripBtn").addEventListener("click", () => renderTickets(6));
+  document.getElementById("fourCardsBtn").addEventListener("click", () => renderCards(4));
   document.getElementById("printBtn").addEventListener("click", () => window.print());
 
-  buildMasterGrid();
+  buildMasterBoard();
+  renderCards(1);
   resetGame();
-  renderTickets(1);
 </script>
 </body>
 </html>
-
